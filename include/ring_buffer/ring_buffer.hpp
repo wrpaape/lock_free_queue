@@ -1,5 +1,5 @@
-#ifndef SINGLE_BUFFER_RING_BUFFER_HPP
-#define SINGLE_BUFFER_RING_BUFFER_HPP
+#ifndef RING_BUFFER_RING_BUFFER_HPP
+#define RING_BUFFER_RING_BUFFER_HPP
 
 // EXTERNAL DEPENDENCIES
 // =============================================================================
@@ -214,15 +214,18 @@ private:
     {
         T *ptr;
 
-        if (tail <= head) {
-            for (ptr = tail; ptr < head; ++ptr)
+        T *const final_tail = tail.load(std::memory_order_relaxed);
+        T *const final_head = head.load(std::memory_order_relaxed);
+
+        if (final_tail <= final_head) {
+            for (ptr = final_tail; ptr < final_head; ++ptr)
                 ptr->~T();
 
         } else {
-            for (ptr = first; ptr < head; ++ptr)
+            for (ptr = first; ptr < final_head; ++ptr)
                 ptr->~T();
 
-            ptr = tail;
+            ptr = final_tail;
             do {
                 ptr->~T();
             } while (++ptr <= last);
@@ -238,16 +241,19 @@ private:
         try {
             T *ptr;
 
-            if (tail <= head) {
-                for (ptr = tail; ptr < head; ++ptr)
+            T *const final_tail = final_tail.load(std::memory_order_relaxed);
+            T *const final_head = head.load(std::memory_order_relaxed);
+
+            if (final_tail <= final_head) {
+                for (ptr = final_tail; ptr < final_head; ++ptr)
                     ptr->~T();
 
 
             } else {
-                for (ptr = first; ptr < head; ++ptr)
+                for (ptr = first; ptr < final_head; ++ptr)
                     ptr->~T();
 
-                ptr = tail;
+                ptr = final_tail;
                 do {
                     ptr->~T();
                 } while (++ptr <= last);
@@ -269,4 +275,4 @@ private:
     std::atomic<T *> tail;
 }; // class RingBuffer
 
-#endif // ifndef SINGLE_BUFFER_RING_BUFFER_HPP
+#endif // ifndef RING_BUFFER_RING_BUFFER_HPP
