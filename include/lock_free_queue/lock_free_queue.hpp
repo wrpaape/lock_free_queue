@@ -1,5 +1,5 @@
-#ifndef RING_BUFFER_RING_BUFFER_HPP
-#define RING_BUFFER_RING_BUFFER_HPP
+#ifndef LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_HPP
+#define LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_HPP
 
 // EXTERNAL DEPENDENCIES
 // =============================================================================
@@ -13,17 +13,17 @@
 
 
 template<typename T>
-class RingBuffer
+class LockFreeQueue
 {
 public:
-    RingBuffer(const std::size_t capacity)
+    LockFreeQueue(const std::size_t capacity)
         : first(allocate(capacity)), // pointer to first element in buffer
           last(first + capacity),    // pointer to last element in buffer
           head(first),
           tail(first)
     {}
 
-    ~RingBuffer() noexcept(std::is_nothrow_destructible<T>::value)
+    ~LockFreeQueue() noexcept(std::is_nothrow_destructible<T>::value)
     {
         // ensure latest modifications have been loaded
         std::atomic_thread_fence(std::memory_order_acquire);
@@ -195,7 +195,7 @@ private:
     {
         if (capacity == 0)
             throw std::invalid_argument(
-                "RingBuffer::allocate() -- capacity must be nonzero"
+                "LockFreeQueue::allocate() -- capacity must be nonzero"
             );
 
         T *const buffer = static_cast<T *>(
@@ -273,6 +273,6 @@ private:
     T         *const last;
     std::atomic<T *> head;
     std::atomic<T *> tail;
-}; // class RingBuffer
+}; // class LockFreeQueue
 
-#endif // ifndef RING_BUFFER_RING_BUFFER_HPP
+#endif // ifndef LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_HPP

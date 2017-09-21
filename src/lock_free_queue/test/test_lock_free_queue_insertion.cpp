@@ -6,8 +6,8 @@
 #include "mail_box/mail_box.hpp" // MailBox
 #include "gtest/gtest.h"         // TEST, ASSERT_*
 
-// RingBuffer
-#include "ring_buffer/ring_buffer.hpp"
+// LockFreeQueue
+#include "lock_free_queue/lock_free_queue.hpp"
 
 
 
@@ -20,7 +20,7 @@ TEST(insertion, single_thread)
         int prev;
         int next;
 
-        RingBuffer<int> buffer(buffer_size);
+        LockFreeQueue<int> buffer(buffer_size);
 
         for (int i = 0; i < mail_box_size; ++i)
             buffer.emplace_front(i);
@@ -61,7 +61,7 @@ TEST(insertion, multi_thread)
 
     std::bitset<count_integers>                used_integers;
     MailBox<unsigned int, count_integers * 16> mail_box;
-    RingBuffer<unsigned int>       buffer(count_integers);
+    LockFreeQueue<unsigned int>       buffer(count_integers);
     std::vector<std::thread>                   consumers;
 
     std::atomic<bool> continue_consuming(true);

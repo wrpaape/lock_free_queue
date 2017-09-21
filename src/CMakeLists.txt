@@ -1,1 +1,1 @@
-add_subdirectory(ring_buffer)
+add_subdirectory(lock_free_queue)
