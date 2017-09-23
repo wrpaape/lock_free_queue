@@ -53,7 +53,7 @@ TEST(construction, all_elements_constructed)
     LockFreeQueue<CtorCounter> buffer(100);
 
     for (unsigned int i = 0; i < 10; ++i)
-            buffer.emplace_front(count_constructed);
+            buffer.enqueue(count_constructed);
 
     ASSERT_EQ(10,
               count_constructed) << "count_constructed != count inserted";
@@ -61,7 +61,7 @@ TEST(construction, all_elements_constructed)
     count_constructed = 0;
 
     for (unsigned int i = 0; i < 1000; ++i)
-            buffer.emplace_front(count_constructed);
+            buffer.enqueue(count_constructed);
 
     ASSERT_EQ(1000,
               count_constructed) << "count_constructed != count inserted";

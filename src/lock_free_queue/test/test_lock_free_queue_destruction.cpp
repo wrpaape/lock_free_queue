@@ -47,7 +47,7 @@ TEST(destruction, all_elements_destroyed)
         LockFreeQueue<DtorCounter> buffer(1000);
 
         for (unsigned int i = 0; i < 1000; ++i)
-            buffer.emplace_front(count_destroyed);
+            buffer.enqueue(count_destroyed);
     }
     ASSERT_EQ(1000,
               count_destroyed) << "count constructions != count destroyed";
@@ -58,7 +58,7 @@ TEST(destruction, all_elements_destroyed)
         LockFreeQueue<DtorCounter> buffer(100);
 
         for (unsigned int i = 0; i < 10000; ++i)
-            buffer.emplace_front(count_destroyed);
+            buffer.enqueue(count_destroyed);
     }
     ASSERT_EQ(10000,
               count_destroyed) << "count constructions != count destroyed";

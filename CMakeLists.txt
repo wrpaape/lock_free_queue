@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(
-    ring_buffer
+    lock_free_queue
     VERSION 0.1.0
     LANGUAGES CXX
 )

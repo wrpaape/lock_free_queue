@@ -23,17 +23,17 @@ TEST(insertion, single_thread)
         LockFreeQueue<int> buffer(buffer_size);
 
         for (int i = 0; i < mail_box_size; ++i)
-            buffer.emplace_front(i);
+            buffer.enqueue(i);
 
         const std::size_t buffer_count = std::min(mail_box_size, buffer_size);
 
         for (int i = 0; i < buffer_count; ++i) {
-            ASSERT_TRUE(buffer.try_pop_back(next)) << "buffer under-filled";
+            ASSERT_TRUE(buffer.try_dequeue(next)) << "buffer under-filled";
 
             mail_box.push_back(next);
         }
 
-        ASSERT_FALSE(buffer.try_pop_back(next)) << "buffer over-filled";
+        ASSERT_FALSE(buffer.try_dequeue(next)) << "buffer over-filled";
 
         auto       mail_box_iter = mail_box.cbegin();
         const auto mail_box_end  = mail_box.cend();
@@ -72,16 +72,16 @@ TEST(insertion, multi_thread)
             unsigned int integer;
 
             while (continue_consuming)
-                if (buffer.try_pop_back(integer))
+                if (buffer.try_dequeue(integer))
                     mail_box.push_back(integer);
 
-            while (buffer.try_pop_back(integer))
+            while (buffer.try_dequeue(integer))
                 mail_box.push_back(integer);
         });
 
     // write to buffer
     for (unsigned int integer = 0; integer < count_integers; ++integer)
-        buffer.emplace_front(integer);
+        buffer.enqueue(integer);
 
     // stop consumers
     continue_consuming = false;
