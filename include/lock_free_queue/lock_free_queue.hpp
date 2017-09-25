@@ -12,9 +12,11 @@
 
 
 
-template<typename T, std::size_t Capacity>
+template<typename T, std::size_t capacity>
 class LockFreeQueue
 {
+static_assert(capacity > 0,
+              "capacity must be greater than zero");
 private:
     struct Node
     {
@@ -25,6 +27,10 @@ private:
     class Allocator
     {
     public:
+        Allocator()
+            : Allocator(reinterpret_cast<Node *>(&buffer[0]))
+        {}
+
         Node *
         allocate()
         {
@@ -38,6 +44,26 @@ private:
         }
 
     private:
+        Allocator(Node *next)
+            : free(next)
+        {
+            const Node *const end = next + capacity;
+
+            Node *prev;
+
+            while (true) {
+                prev = next++;
+                if (next == end)
+                    break;
+
+                prev->next.store(next,
+                                 std::memory_order_relaxed);
+            }
+
+            prev->next.store(nullptr,
+                             std::memory_order_release);
+        }
+
         std::atomic<Node *> free;
         char buffer[sizeof(Node) * capacity];
     }; // class Allocator
