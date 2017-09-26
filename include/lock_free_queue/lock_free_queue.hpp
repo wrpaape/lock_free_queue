@@ -24,15 +24,15 @@ private:
         std::atomic<Node *> next;
     }; // struct Node
 
-    class Allocator
+    class NodeManager
     {
     public:
-        Allocator()
-            : Allocator(reinterpret_cast<Node *>(&buffer[0]))
+        NodeManager()
+            : NodeManager(reinterpret_cast<Node *>(&buffer[0]))
         {}
 
         Node *
-        allocate()
+        make()
         {
             return nullptr;
         }
@@ -44,7 +44,7 @@ private:
         }
 
     private:
-        Allocator(Node *next)
+        NodeManager(Node *next)
             : free(next)
         {
             const Node *const end = next + capacity;
@@ -66,19 +66,34 @@ private:
 
         std::atomic<Node *> free;
         char buffer[sizeof(Node) * capacity];
-    }; // class Allocator
+    }; // class NodeManager
 
 public:
     LockFreeQueue()
+        : node_manager(),
+          head(nullptr),
+          tail(nullptr)
     {}
 
     ~LockFreeQueue()
     {}
 
+    template<typename ...Args>
+    bool
+    try_enqueue(Args &&...args)
+    {
+        Node *const node = node_manager.make(std::forward<Args>(args)...);
+
+        if (!node)
+            return false;
+
+    }
+
+
 private:
     std::atomic<Node *> head;
     std::atomic<Node *> tail;
-    Allocator           allocator;
+    NodeManager         node_manager;
 }; // class LockFreeQueue
 
 #endif // ifndef LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_HPP
