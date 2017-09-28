@@ -31,10 +31,25 @@ private:
             : NodeManager(reinterpret_cast<Node *>(&buffer[0]))
         {}
 
+        template<typename ...Args>
         Node *
-        make()
+        make(Args &&...args)
         {
-            return nullptr;
+            Node *node;
+
+            node = free.load(std::memory_order_acquire);
+            do {
+                if (!node)
+                    return node;
+
+                Node *const next = node->next.load(std::memory_order_acquire);
+            } while (!free.compare_exchange_weak(node,
+                                                 next,
+                                                 std::memory_order_acquire,
+                                                 std::memory_order_acquire));
+
+            (void) new(node) T(std::forward<Args>(args)...);
+            return node;
         }
 
         void
