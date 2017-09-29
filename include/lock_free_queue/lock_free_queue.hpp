@@ -33,7 +33,7 @@ private:
 
         template<typename ...Args>
         Node *
-        make(Args &&...args)
+        construct(Args &&...args)
         {
             Node *node;
 
@@ -48,14 +48,27 @@ private:
                                                  std::memory_order_acquire,
                                                  std::memory_order_acquire));
 
-            (void) new(node) T(std::forward<Args>(args)...);
+            (void) new(&node->value) T(std::forward<Args>(args)...);
             return node;
         }
 
         void
         destroy(Node *const node)
         {
+            node->~T();
 
+            std::atomic<Node *> &node_next = node->next;
+            Node *head = free.load(std::memory_order_acquire);
+
+            do {
+                // link node to current head of free stack
+                node_next.store(head,
+                                std::memory_order_acquire);
+                // swap node into 'free' as new head
+            } while (free.compare_exchange_weak(head,
+                                                node,
+                                                std::memory_order_acquire,
+                                                std::memory_order_acquire));
         }
 
     private:
@@ -97,7 +110,7 @@ public:
     bool
     try_enqueue(Args &&...args)
     {
-        Node *const node = node_manager.make(std::forward<Args>(args)...);
+        Node *const node = node_manager.construct(std::forward<Args>(args)...);
 
         if (!node)
             return false;
