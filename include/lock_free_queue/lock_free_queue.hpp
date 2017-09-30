@@ -16,7 +16,7 @@ template<typename T, std::size_t capacity>
 class LockFreeQueue
 {
 static_assert(capacity > 0,
-              "capacity must be greater than zero");
+              "'capacity' must be greater than zero");
 private:
     struct Node
     {
@@ -100,7 +100,7 @@ public:
     LockFreeQueue()
         : node_manager(),
           head(nullptr),
-          tail(nullptr)
+          tail_ptr(nullptr)
     {}
 
     ~LockFreeQueue()
@@ -115,13 +115,38 @@ public:
         if (!node)
             return false;
 
+
+        Node *current_head;
+        Node **last_tail_ptr;
+        Node **next_tail_ptr = ;
+
+
+        last_tail_ptr = tail_ptr.exchange(&node->next,
+                                          std::memory_order_release);
+
+        last_tail_ptr
+
+        while (true) {
+             current_head = nullptr;
+
+             if (head.compare_exchange_weak(current_head,
+                                            node,
+                                            std::memory_order_acquire,
+                                            std::memory_order_acquire)) {
+                 head.store(node,
+                            std::memory_order_relaxed);
+
+             } else {
+
+             }
+        }
     }
 
 
 private:
-    std::atomic<Node *> head;
-    std::atomic<Node *> tail;
-    NodeManager         node_manager;
+    std::atomic<Node *>                 head;
+    std::atomic< std::atomic<Node *> *> tail_ptr;
+    NodeManager                         node_manager;
 }; // class LockFreeQueue
 
 #endif // ifndef LOCK_FREE_QUEUE_LOCK_FREE_QUEUE_HPP
