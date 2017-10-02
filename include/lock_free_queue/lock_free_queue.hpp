@@ -116,30 +116,18 @@ public:
             return false;
 
 
-        Node *current_head;
-        Node **last_tail_ptr;
-        Node **next_tail_ptr = ;
-
-
+        std::atomic<Node *> *const
         last_tail_ptr = tail_ptr.exchange(&node->next,
                                           std::memory_order_release);
 
-        last_tail_ptr
+        if (last_tail_ptr == nullptr)
+            head.store(node,
+                       std::memory_order_release);
+        else
+            last_tail_ptr->store(node,
+                                 std::memory_order_release);
 
-        while (true) {
-             current_head = nullptr;
-
-             if (head.compare_exchange_weak(current_head,
-                                            node,
-                                            std::memory_order_acquire,
-                                            std::memory_order_acquire)) {
-                 head.store(node,
-                            std::memory_order_relaxed);
-
-             } else {
-
-             }
-        }
+        return true;
     }
 
 
