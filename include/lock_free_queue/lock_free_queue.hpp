@@ -120,12 +120,31 @@ public:
         last_tail_ptr = tail_ptr.exchange(&node->next,
                                           std::memory_order_release);
 
-        if (last_tail_ptr == nullptr)
-            head.store(node,
-                       std::memory_order_release);
-        else
+        if (last_tail_ptr)
             last_tail_ptr->store(node,
                                  std::memory_order_release);
+        else
+            head.store(node,
+                       std::memory_order_release);
+
+        return true;
+    }
+
+    bool
+    try_dequeue(T &value)
+    {
+        Node *node;
+        Node *next;
+
+        node = head.load(std::memory_order_acquire);
+
+        while (true) {
+            if (!node)
+                return false;
+
+            next = node->next.load(std::memory_order_acquire);
+
+        }
 
         return true;
     }
