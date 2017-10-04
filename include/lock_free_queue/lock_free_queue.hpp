@@ -65,10 +65,10 @@ private:
                 node_next.store(head,
                                 std::memory_order_acquire);
                 // swap node into 'free' as new head
-            } while (free.compare_exchange_weak(head,
-                                                node,
-                                                std::memory_order_acquire,
-                                                std::memory_order_acquire));
+            } while (!free.compare_exchange_weak(head,
+                                                 node,
+                                                 std::memory_order_acquire,
+                                                 std::memory_order_acquire));
         }
 
     private:
@@ -138,13 +138,19 @@ public:
 
         node = head.load(std::memory_order_acquire);
 
-        while (true) {
+        do {
             if (!node)
                 return false;
 
             next = node->next.load(std::memory_order_acquire);
+        } while (!compare_exchange_weak(node,
+                                        next,
+                                        std::memory_order_acquire,
+                                        std::memory_order_acquire));
 
-        }
+        value = std::move(node->value);
+
+        node_manager.destroy(node);
 
         return true;
     }
