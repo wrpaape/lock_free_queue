@@ -17,7 +17,7 @@ TEST(destruction, no_elements_destroyed)
     }; // struct DoNotDestroy
 
     ASSERT_NO_THROW(
-        LockFreeQueue<DoNotDestroy>(200)
+        LockFreeQueue<DoNotDestroy, 200>()
     ) << "~DoNotDestroy() called";
 }
 
@@ -44,22 +44,11 @@ TEST(destruction, all_elements_destroyed)
 
     count_destroyed = 0;
     {
-        LockFreeQueue<DtorCounter> buffer(1000);
+        LockFreeQueue<DtorCounter, 1000> buffer;
 
         for (unsigned int i = 0; i < 1000; ++i)
-            buffer.enqueue(count_destroyed);
+            ASSERT_TRUE(buffer.try_enqueue(count_destroyed)) << "out of memory";
     }
     ASSERT_EQ(1000,
-              count_destroyed) << "count constructions != count destroyed";
-
-
-    count_destroyed = 0;
-    {
-        LockFreeQueue<DtorCounter> buffer(100);
-
-        for (unsigned int i = 0; i < 10000; ++i)
-            buffer.enqueue(count_destroyed);
-    }
-    ASSERT_EQ(10000,
               count_destroyed) << "count constructions != count destroyed";
 }
