@@ -44,10 +44,10 @@ TEST(destruction, all_elements_destroyed)
 
     count_destroyed = 0;
     {
-        LockFreeQueue<DtorCounter, 1000> buffer;
+        LockFreeQueue<DtorCounter, 1000> queue;
 
         for (unsigned int i = 0; i < 1000; ++i)
-            ASSERT_TRUE(buffer.try_enqueue(count_destroyed)) << "out of memory";
+            ASSERT_TRUE(queue.try_enqueue(count_destroyed)) << "out of memory";
     }
     ASSERT_EQ(1000,
               count_destroyed) << "count constructions != count destroyed";
